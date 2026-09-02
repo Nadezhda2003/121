@@ -107,7 +107,6 @@ def run_analysis(mode, target_date):
         
         from functions import calculate
         
-        # Выполняем комплексный анализ
         results = calculate.run_comprehensive_analysis(mode=mode, target_date=target_date)
         
         if results and results.get('analysis_mode'):
@@ -129,7 +128,6 @@ def run_analysis(mode, target_date):
                 print("  - pest (ln(stoim_zil_nedv)) и threshold_nedv")
             
             print("\nГенерация барометра уязвимостей...")
-            # ПЕРЕДАЕМ РЕЗУЛЬТАТЫ И РЕЖИМ В itog()
             calc_auc.itog(results=results, analysis_mode=analysis_mode)
             
             print("\n" + "=" * 70)

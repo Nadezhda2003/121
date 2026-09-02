@@ -299,7 +299,7 @@ def calc_prir(df, type = None):
                 result_value = 2 * filtered_data.std(ddof=1)
                 results_dict[col] = result_value
     return df, results_dict
-# calc_auc.py - исправленная функция itog() с параметрами results и analysis_mode
+
 
 def itog(results=None, analysis_mode=None):
     """
@@ -415,30 +415,40 @@ def itog(results=None, analysis_mode=None):
 
     # ============================================================
     # ПРЕДВАРИТЕЛЬНЫЙ РЕЖИМ: Сдвиг ПРОИЗВОДНЫХ критических показателей
+    # ПОСЛЕ всех расчетов (перед deviation)
     # ============================================================
     if analysis_mode == 'preliminary':
-        print("Применение сдвига для производных критических показателей...")
+        print("Применение сдвига для производных критических показателей (после расчетов)...")
         
-        # Производные критические столбцы (те, что зависят от исходных критических данных)
+        # Производные критические столбцы
         critical_derived_columns = [
-            'gd_gdp',           # из vvd → vvd_mean % ВВП (и threshold_vvd)
-            'ca',               # из sto → sto_y % ВВП (и threshold_sto)
-            'd_srv',            # из vvd_crat, vvd_dolg → КОД (и threshold_serv)
-            'l_gdp',            # из vvd_crat, vvd_dolg → credits % ВВП (и threshold_cred)
-            'rcgr_h1', 'rcgr_h2', 'rcgr_h3',  # из vvd_crat, vvd_dolg (и thresholds)
-            'pest',             # из vvd_crat, vvd_dolg → ln(stoim_zil_nedv) (и threshold_nedv)
+            'gd_gdp', 'dsr', 'ggr', 'ca', 
+            'rcgr_c1', 'rcgr_c2', 'rcgr_c3', 'exd_s'
         ]
         
-        # Применяем сдвиг для производных столбцов в ind (индикаторы)
+        # Сохраняем последнюю дату
+        last_date_ind = ind['Date'].iloc[-1] if not ind.empty else None
+        last_date_th = th['Date'].iloc[-1] if not th.empty else None
+        
+        # Применяем сдвиг и ЗАПОЛНЯЕМ NaN
         for col in critical_derived_columns:
             if col in ind.columns:
+                # Запоминаем значение для последней даты
+                last_value = ind.loc[ind['Date'] == last_date_ind, col].iloc[0] if last_date_ind is not None and not ind[ind['Date'] == last_date_ind].empty else None
+                # Применяем сдвиг
                 ind[col] = ind[col].shift(1)
+                # Заполняем NaN (на первой дате) значением с последней даты (заполняем вперед и назад)
+                ind[col] = ind[col].fillna(method='bfill').fillna(method='ffill')
+                ind[col] = ind[col].fillna(0)
                 print(f"  Сдвиг индикатора: {col}")
             if col in th.columns:
+                last_value = th.loc[th['Date'] == last_date_th, col].iloc[0] if last_date_th is not None and not th[th['Date'] == last_date_th].empty else None
                 th[col] = th[col].shift(1)
+                th[col] = th[col].fillna(method='bfill').fillna(method='ffill')
+                th[col] = th[col].fillna(0)
                 print(f"  Сдвиг порога: {col}")
         
-        print("\nСдвиг применен для производных критических столбцов:")
+        print("\nСдвиг применен для производных критических столбцов ПОСЛЕ расчетов")
         print("  - ca (sto_y % ВВП) и threshold_sto")
         print("  - gd_gdp (vvd_mean % ВВП) и threshold_vvd")
         print("  - d_srv (КОД) и threshold_serv")
