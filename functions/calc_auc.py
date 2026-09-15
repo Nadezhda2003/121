@@ -438,13 +438,13 @@ def itog(results=None, analysis_mode=None):
                 # Применяем сдвиг
                 ind[col] = ind[col].shift(1)
                 # Заполняем NaN (на первой дате) значением с последней даты (заполняем вперед и назад)
-                ind[col] = ind[col].fillna(method='bfill').fillna(method='ffill')
+                ind[col] = ind[col].bfill().ffill()
                 ind[col] = ind[col].fillna(0)
                 print(f"  Сдвиг индикатора: {col}")
             if col in th.columns:
                 last_value = th.loc[th['Date'] == last_date_th, col].iloc[0] if last_date_th is not None and not th[th['Date'] == last_date_th].empty else None
                 th[col] = th[col].shift(1)
-                th[col] = th[col].fillna(method='bfill').fillna(method='ffill')
+                th[col] = th[col].bfill().ffill()
                 th[col] = th[col].fillna(0)
                 print(f"  Сдвиг порога: {col}")
         
